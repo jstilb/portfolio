@@ -1,0 +1,223 @@
+---
+title: 'Lab 1: Question 3'
+author: "Devashish Kulkarni, John-Michael Stilb, March Saper"
+output:
+  pdf_document:
+    toc: yes
+  bookdown::pdf_document2:
+    toc: yes
+---
+
+\clearpage
+
+```{r load packages, echo=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
+library(ggplot2) 
+library(tidyverse)
+library(haven)
+library(forcats)
+library(captioner)
+
+fig_nums <- captioner(prefix = "Figure")
+```
+
+```{r load and clean data, echo=FALSE, warning=FALSE, message=FALSE}
+data <- read_dta("anes_timeseries_2020_stata_20210324.dta")
+```
+
+# Are people who believe that science is important for making government decisions about COVID-19 more likely to disapprove of their Governor's COVID-19 response? \
+
+
+## Importance and Context
+The COVID-19 pandemic tested leadership at a national and local level especially in countries like the United States, which provide a high-level of authority and autonomy to local governments. The scientific nature of the COVID-19 pandemic calls into question to what degree leaders incorporated science into their response. By assessing whether respondents who place a high/low value in science approved of their governor’s response, we can better understand how prepared leadership at the local level was for dealing with the COVID-19 and how effective a decentralized and local approach can be in the future. 
+
+
+## Description of Data
+For our research question we used data from the American National Election Studies (ANES) 2020 Time Series Study. This data set, which contains a total of 8,280 participant responses on a variety of survey questions, was collected as part of a series of election studies to support analysis of public opinion and voting behavior in US presidential elections.
+
+To answer our research question,  we chose 2 variables: how important should science be for decisions about COVID-19 (renamed science_belief) and whether the respondents approved or disapproved of their governor handling of COVID-19 (renamed to gov_approval).  
+
+The first, science_belief, originally had respondents choose how important science was in Covid-19 decisions on a scale: not at all important (1), a little important (2), moderately important (3), very important (4), extremely important (5). We classified those who chose science as moderately important (3), very important (4), or extremely important (5) in decisions about Covid-19  as "believers", those who chose not at all important (1) or a little important (2) as “nonbelievers”, and we removed all those who refused to respond or provided a response outside of these values. Approximately 10.8%  of respondents either refused to respond or provided an insufficient response for the science_belief question. We found no satisfactory way to classify these responses into our buckets of “believers” and “nonbelievers” and therefore removed them from our test data. This insufficiency is taken into account during our interpretation of our results. Additionally, there was a large skew towards the believer end of the spectrum (3, 4, 5),  with approximately 93.8% of those respondents who provided an appropriate response  being classified as believers and 6.2% being classified as nonbelievers.
+
+
+```{r science-plot,fig.align='center', echo=FALSE, warning=FALSE, message=FALSE}
+
+# visualize science_belief distribution
+science_plot <- data %>%
+  mutate(
+    science_xs = case_when(
+      V202310 == -9 ~ "Refused",
+      V202310 == -7 ~ "No PE Data",
+      V202310 == -6 ~ "No PE Interview",
+      V202310 == -5 ~ "Interview Breakoff",
+      V202310 == 1 ~ "Not At All Important",
+      V202310 == 2 ~ "Somewhat Important",
+      V202310 == 3 ~ "Moderately Important",
+      V202310 == 4 ~ "Very Important",
+      V202310 == 5 ~ "Extremely Important"),
+    eligible1 = case_when(
+      V202310 %in% c(1, 2, 3, 4, 5) ~ "Eligible",
+      V202310 %in% c(-9, -7, -6, -5) ~ "Ineligible")) %>%
+  mutate(
+    science_xs = fct_relevel(science_xs, levels=c(
+      "Refused",
+      "No PE Data",
+      "No PE Interview",
+      "Interview Breakoff",
+      "Not At All Important",
+      "Somewhat Important",
+      "Moderately Important",
+      "Very Important",
+      "Extremely Important")))%>%
+  ggplot() +
+  theme_classic() + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  aes(x = science_xs, fill = eligible1) + 
+  geom_bar() + 
+  labs(title = "Science Belief Spread", x=NULL, y = "Count") + 
+  guides(fill=guide_legend(title="Test Eligibility")) +
+  scale_fill_manual(values = c("Dark Green", "Red")) + 
+  scale_x_discrete() + 
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0,4000)) + 
+  coord_flip()
+
+science_plot
+```
+
+
+Our second variable, gov_approval is a binary variable containing either a 1 for those who disapproved of their governor’s response or 2 for those who approved of their governor’s response. We removed all responses that refused to respond or didn’t know, which only accounted for 0.6% and thus their removal isn’t concerning. We used this datapoint as our measure to see whether our two groups (believers and nonbelievers) were significantly different in their approval/disapproval of their Governor’s COVID-19 response. 
+
+
+```{r approval-plot, echo=FALSE, fig.align='center', warning=FALSE, message=FALSE}
+
+# visualize gov_approval distribution
+approval_plot <- data %>%
+  mutate(
+    local_xs = case_when(
+      V201145 == -9 ~ "Refused",
+      V201145 == -8 ~ "Don't Know",
+      V201145 == 1 ~ "Disapproved",
+      V201145 == 2 ~ "Approved"
+    ),
+    eligible2 = case_when(
+      V201145 %in% c(1, 2) ~ "Eligible",
+      V201145 %in% c(-9, -8) ~ "Ineligible")) %>%
+  mutate(
+    local_xs = fct_relevel(local_xs, levels=c(
+      "Refused",
+      "Don't Know",
+      "Disapproved",
+      "Approved")))%>%
+  ggplot() +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  aes(x = local_xs, fill = eligible2) + 
+  geom_bar() + 
+  labs(x = NULL, y = "Count", title = "Local Response Belief") + 
+  guides(fill=guide_legend(title="Test Eligibility")) +
+  scale_fill_manual(values = c("Dark Green", "Red")) + 
+  scale_x_discrete() + 
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0,5500))
+
+approval_plot
+```
+
+
+
+## Most appropriate test 
+We chose a comparison of means test between two unpaired groups, because our data is unpaired and parametric, and we wanted a test with higher power to see whether there was a significant difference between the approval percentage of Governors’ COVID-19 responses for those who believed science was important to COVID-19 governmental decision-making and those who didn't.
+
+Assumptions: \
+1. Metric Variable - gov_approval is a binary variable that ranges from 1-2 meaning it is metric. \
+2. IID Sample - The respondents of this survey are randomly selected using USPS data meaning any person that has a registered address with USPS has an equal probability of being selected. Therefore, our sample sufficiently meets our IID assumption. \
+3. Sufficient Normality of the Data - Given our large sample size of the dataset, both groups contain sufficiently large number of samples. Therefore the Central Limit Theorem provides us with sufficient normality.  \
+4. Ineligibility criteria didn’t contain essential information: We removed approximately 10.8% of respondents based on eligibility criteria from our science_belief variable and 0.6% based on our gov_approval eligibility criteria. We acknowledge there is a possibility that those deemed ineligible contained essential information regarding our research question and this must be considered during interpretation of our results. \
+5. Our Classification of Believers & Nonbelievers is Reasonable: Our classification of “believers” and “nonbelievers” directly impacts our test and should be considered when interpreting our results. Our reasons for choosing our classification threshold as “moderately important” or greater (3 or above) for believers stems from our view of COVID-19 as a largely scientific issue that at minimum requires a “moderate” amount of science, even if respondents have a different view on what “moderate” importance is in this context. 
+
+Null Hypothesis: There is NO difference in gov_approval between believers and nonbelievers.
+
+Alternative Hypothesis: There IS a difference in gov_approval between believers and nonbelievers.
+
+Alpha = 0.05
+
+```{r test-plot, echo=FALSE, fig.align='center', warning=FALSE, message=FALSE}
+
+# remove ineligible responses
+data$include = as.numeric(data$V201145 %in% c(1, 2) & data$V202310 %in% c(1, 2, 3, 4, 5))
+
+# create test group criteria
+data$believers = (data$include == 1 & data$V202310 %in% c(3, 4, 5))
+data$nonbelievers <- ifelse(
+  (
+    (data$include == 1) &
+    (data$V202310 %in% c(1, 2))
+  ),
+  1,
+  0
+)
+
+# visualize test groups
+test_plot <- data %>%
+  filter(include == 1) %>%
+  mutate(
+    science_belief = case_when(
+      nonbelievers == TRUE ~ 'Science is Not Important to COVID-19 Response',
+      believers == TRUE ~ 'Science is Important to COVID-19 Response'),
+    local_response_belief = case_when(
+      V201145 == 1 ~ 'Disapproved',
+      V201145 == 2 ~ 'Approved')) %>%
+  mutate(
+    local_response_belief = fct_relevel(local_response_belief, levels=c(
+      "Disapproved",
+      "Approved")),
+    science_belief = fct_relevel(science_belief, levels=c(
+      "Science is Not Important to COVID-19 Response",
+      "Science is Important to COVID-19 Response")))%>%
+  ggplot() +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  aes(x=local_response_belief, fill = as.factor(local_response_belief)) + 
+  geom_bar() + 
+  labs(x = NULL, y = "Count", title = "Approval of Governor's COVID-19 Response") +
+  scale_fill_manual(values = c("Red", "Dark Green")) + 
+  scale_x_discrete() + 
+  scale_y_continuous(expand = c(0,0),
+                     limits = c(0,5000)) +
+  facet_wrap(vars(science_belief)) +
+  theme(legend.position = "none",
+        strip.background = element_rect(colour="black",
+                                        fill="white"))  
+test_plot
+```
+
+
+## Test, results and interpretation
+``` {r t test, echo=TRUE, warning=FALSE, message=FALSE, results=FALSE}
+# create test groups
+believers <- subset(data, believers == TRUE, select=c("V201145"))
+nonbelievers <- subset(data, nonbelievers == TRUE, select=c("V201145"))
+
+# run test
+t.test(believers, nonbelievers)
+```
+Welch Two Sample t-test
+
+data:  believers and nonbelievers \
+t = -8.9763, df = 511.02, p-value < 2.2e-16 \
+alternative hypothesis: true difference in means is not equal to 0 \
+95 percent confidence interval: \
+ -0.2617346 -0.1677370 \
+sample estimates: \
+mean of x mean of y  \
+ 1.362357  1.577093 \
+
+
+Our p-value of 2.2 e-16 is less than our alpha of 0.05  meaning our test was statistically significant and we can reject the null and state there is a difference in gov_approval between believers and nonbelievers. Believers on average disapproved of their governor’s response (1.362357) while nonbelievers on average approved of their governor’s response (1.57703). This suggests that Governors on average didn't take a science-first approach, which raises a few questions: \
+1. How similar were Governor's responses? \
+2. Is a decentralized/local approach worse than a centralized approach for dealing with pandemics? \
+3. Were Governors given enough autonomy to respond on their own? \
+4. What factors may have influenced a non-scientific approach? \
+
+We raise these questions, because while our findings strongly suggest that on average Governors responded non-scientifically to COVID-19, our findings aren't causal and there may be other variables at play. Additionally, we excluded over 10.8% of respondents due to insufficient responses, which may have affected our results. We suggest that further investigation into this research question be undertaken.  
