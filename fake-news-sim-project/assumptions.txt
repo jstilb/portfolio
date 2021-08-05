@@ -1,0 +1,27 @@
+Model Assumptions:
+For the sake of reducing model complexity I treat all objects as homogenous demographically.
+Instead I chose to focus on polarization and credibility as the differentiating factors between different object.
+I believe these are two of the strongest independent variables in predicting from fake news belief and distribution from what I've studied.
+I don't expect the model to accurately reflect the complexities of real fake news distribution and consumption.
+Although I believe it can serve as an effective way to study the effects of polarization and credibility on fake news distribution through the medium of networks.
+
+1. Extremely polarized media distributors distribute around 68% of all fake news and around 5% of all real news.
+2. Moderately polarized media distributors distribute around 27% of all fake and around 27% of all real news.
+3. Weakly polarized media distributors distribute around 5% of all fake news and around 68% of all real news.
+4. Around 20% of all media distributors will be extremely polarized.
+5. Around 40% of all media distributors are moderately polarized.
+6. Around 40% of all media distributors are weakly polarized.
+7. A person is more likely to believe and share a particular piece of news if they are politically aligned.
+8. Likelihood of belief and likelihood of redistribution increases the more closely polarized a person and news piece are.
+9. A person may belong to up to three media distribution networks.
+10. A person may belong to up to 3 networks.
+11. Around 20% of all people will be extremely polarized.
+12. Around 40% of all people are moderately polarized.
+13. Around 40% of all people are weakly polarized.
+14. A person's polarization may change based on the news they believe.
+15. A person is more likely to change in the direction of their polarization.
+16. Each person has a preference for how much news they will consume each round.
+17. A media distributor will share all of a news batch with all people in its network, though people may not consume it all.
+18. A person will only share news with a few people in their networks.
+19. All actions of creation, distribution, and consumption incorporate some form of randomness.
+20. A majority of random interactions are scaled from 1-10, with preferences taken into account afterwards.
