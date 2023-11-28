@@ -1,0 +1,195 @@
+﻿Sparql,NL
+"SELECT DISTINCT ?city ?cityLabel ?mayor ?mayorLabel
+WHERE
+{
+  BIND(wd:Q6581072 AS ?sex)
+  BIND(wd:Q515 AS ?c)
+
+	?city wdt:P31/wdt:P279* ?c . 
+	?city p:P6 ?statement .            
+	?statement ps:P6 ?mayor .          
+	?mayor wdt:P21 ?sex .       
+	FILTER NOT EXISTS { ?statement pq:P582 ?x }  	?city wdt:P1082 ?population .
+	SERVICE wikibase:label {
+		bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" .
+	}
+}
+ORDER BY DESC(?population)
+LIMIT 10",What are the largest cities with female mayors in ?
+"SELECT ?place ?placeLabel ?location ?instanceLabel
+WHERE
+{
+  wd:Q9188 wdt:P625 ?loc .
+  SERVICE wikibase:around {
+      ?place wdt:P625 ?location .
+      bd:serviceParam wikibase:center ?loc .
+      bd:serviceParam wikibase:radius ""1"" .
+  }
+  OPTIONAL {    ?place wdt:P31 ?instance  }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"" }
+  BIND(geof:distance(?loc, ?location) as ?dist)
+} ORDER BY ?dist",What places are within 1km from the Empire State Building?
+"SELECT ?cityLabel
+WITH {
+  SELECT DISTINCT *
+  WHERE {
+    ?city wdt:P31/wdt:P279* wd:Q515 .
+    ?city wdt:P1082 ?population .
+    ?city wdt:P625 ?gps .
+  }
+  ORDER BY DESC(?population)
+  LIMIT 100
+} AS %i
+WHERE {
+  INCLUDE %i
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" . }
+}
+ORDER BY DESC(?population)",What are the largest cities in the world by population?
+"SELECT ?item ?itemLabel 
+WHERE
+{
+  ?item wdt:P2218 ?worth.
+  ?item wdt:P19 ?location .
+  
+  FILTER(?worth>1000000000).
+  BIND(?worth/1000000000 AS ?billion).
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""en,de"". }
+}
+GROUP BY ?locationLabel ?item ?itemLabel
+ORDER BY DESC(?billions)",Who are billionaires in this world?
+"SELECT DISTINCT ?item ?itemLabel
+WHERE
+{
+  VALUES ?property {
+                      wdt:P3356 
+                      wdt:P3357 
+                      wdt:P3358 
+                      wdt:P3359 
+                     }
+    ?item wdt:P3329 ?civic_id .
+    {?item  ?property wd:Q1164529.} # wd:Q1164529 = renal cell carcinoma
+    UNION
+    {?item p:P3354 ?o . 
+     ?o pq:P2175 wd:Q1164529 .}
+    UNION
+    {?item p:P3354 ?o . 
+     ?o pq:P2175 wd:Q1164529 .}
+     
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" }
+}",Which variants are associated with renal cell carcinoma
+"SELECT ?discoverer ?discovererLabel ?count
+WITH {
+  SELECT ?discoverer (COUNT(?asteroid) AS ?count)
+  WHERE {
+    ?asteroid wdt:P31 wd:Q3863;
+      wdt:P61 ?discoverer .
+  }
+  GROUP BY ?discoverer
+  ORDER BY DESC(?count)
+  LIMIT 20
+} AS %i
+WHERE {
+  INCLUDE %i
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" . }
+}
+ORDER BY DESC(?count)",Who discovered the most astroids?
+"SELECT distinct ?uLabel ?founded ?stateLabel ?stateStart
+WHERE {
+  ?u wdt:P31/wdt:P279* wd:Q3918 ;
+       wdt:P131+ ?state ;
+       wdt:P571 ?founded .
+  ?state wdt:P31 wd:Q35657 ;
+           wdt:P571 ?stateStart .
+  FILTER (?founded < ?stateStart) .
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"".
+  }
+}
+LIMIT 10",Which American universities were founded before their state was founded?
+"SELECT DISTINCT ?Person ?PersonLabel WHERE {
+  ?NobelPrize wdt:P279?/wdt:P31? wd:Q7191 .    
+  ?AcademyAward wdt:P279?/wdt:P31? wd:Q19020 . 
+  ?Person wdt:P166? ?NobelPrize .              
+  ?Person wdt:P166? ?AcademyAward .           
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" .
+  }
+}",Which people have receiced both Academy Awards and a Nobel Prize
+"SELECT ?label ?coord ?subj
+WHERE
+{
+   ?subj wdt:P170 wd:Q5593 .
+  OPTIONAL {?subj wdt:P276 ?loc .
+    ?loc wdt:P625 ?coord } .   
+   ?subj rdfs:label ?label FILTER (lang(?label) = ""en"")
+}",What are the coordinates of Pablo Picasso's art works?
+"PREFIX gas: <http://www.bigdata.com/rdf/gas#>
+
+SELECT distinct ?item ?itemLabel 
+WHERE {
+  SERVICE gas:service {
+    gas:program gas:gasClass ""com.bigdata.rdf.graph.analytics.SSSP"" ;
+                gas:in wd:Q720 ;
+                gas:traversalDirection ""Forward"" ;
+                gas:out ?item ;
+                gas:out1 ?depth ;
+
+                gas:maxIterations 4 ;
+                gas:linkType wdt:P40 .
+  }
+  OPTIONAL { ?item wdt:P40 ?linkTo }
+  OPTIONAL { ?item wdt:P18 ?pic }
+  SERVICE wikibase:label {bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" }
+}",Who are the children of Genghis Khan
+"SELECT distinct ?place ?placeLabel
+WHERE
+{
+  wd:Q64 wdt:P625 ?berlinLoc .
+  SERVICE wikibase:around {
+    ?place wdt:P625 ?location .
+    bd:serviceParam wikibase:center ?berlinLoc .
+    bd:serviceParam wikibase:radius ""100"" .
+  } .
+
+  FILTER EXISTS { ?place wdt:P31/wdt:P279* wd:Q1248784 } .
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"" .
+  } 
+}",Which airports are within 100km of Berlin?
+"SELECT DISTINCT ?airport ?airportLabel
+WHERE {
+  ?airport wdt:P31 wd:Q644371 ;  
+          # ?range wd:Q183;
+          wdt:P625 ?coor.
+  ?airport wdt:P138 ?namedafter .
+  ?namedafter wdt:P31 wd:Q5 .
+  ?namedafter wdt:P21 wd:Q6581072 .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"". }
+}",Which airports are named after women?
+"SELECT distinct ?eyeColor ?eyeColorLabel
+WHERE
+{
+  ?human wdt:P31 wd:Q5.
+  ?human wdt:P1340 ?eyeColor.
+  OPTIONAL { ?eyeColor wdt:P465 ?rgb. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""[AUTO_LANGUAGE],en"". }
+}
+GROUP BY ?eyeColor ?eyeColorLabel ?rgb
+ORDER BY DESC(?count)
+limit 10",What are the most popular human eye colors?
+"SELECT ?city ?cityLabel ?coordinates
+WHERE
+{
+   VALUES ?highway {wd:Q327162 }
+   ?highway wdt:P2789 ?city .
+    ?city wdt:P625 ?coordinates .
+   SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"". }
+}",Which cities are connected by European route E40?
+"SELECT distinct ?river ?riverLabel
+WHERE
+{
+  ?river wdt:P31/wdt:P279* wd:Q355304; # watercourse; includes a few creeks – use wd:Q4022 for rivers only
+         wdt:P30 wd:Q51.
+  OPTIONAL { ?river wdt:P625 ?location. }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language ""en"". }
+}",What are the river names in Antarctica?

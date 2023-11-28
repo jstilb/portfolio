@@ -1,0 +1,33 @@
+[tool.poetry]
+name = "lab2"
+version = "0.1.0"
+description = ""
+authors = ["Max Ziff <daziff@berkeley.edu>", "James Winegar <jameswine@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.10.0,<3.11"
+fastapi = "^0.71.0"
+uvicorn = "^0.16.0"
+joblib = "^1.1.0"
+scipy = "^1.7"
+scikit-learn = "^1.0"
+openai = "^0.27.2"
+wikibaseintegrator = "^0.12.3"
+transformers = "^4.27.3"
+sentencepiece = "^0.1.97"
+wikidata = "^0.7.0"
+pandas = "^1.5.3"
+torch = "^2.0.0"
+langchain = "^0.0.135"
+sparqlwrapper = "^2.0.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2"
+requests = "^2.27.1"
+isort = "^5.10.1"
+black = "^21.12b0"
+pre-commit = "^2.16.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
